@@ -1,3 +1,4 @@
+utl-indentify-all-keywords-contained-in-a-string
 Identify these keywords and assign a logical 0/1 if the keyword is in the string                                            
                                                                                                                             
      string= 004 Chair- Window/Glass Frame-                                                                                 
@@ -13,7 +14,12 @@ StacOverflow R
 https://tinyurl.com/y4gpf2ed                                                                                                
 https://stackoverflow.com/questions/56792985/split-uneven-strings-into-sorted-columns-in-r                                  
                                                                                                                             
-     Method                                                                                                                 
+     MethodS                                                                                                                
+                                                                                                                            
+      A. Paul Dorfman's very elegant findw and array solution                                                               
+         Paul Dorfman                                                                                                       
+         sashole@bellsouth.net                                                                                              
+      B. My feeble attempt                                                                                                  
                                                                                                                             
         1. Replace non alphabetic characters with blanks                                                                    
         2. Output just the words in the leyword list                                                                        
@@ -117,7 +123,63 @@ WORK>WANT                                                                       
 \__ \ (_) | | |_| | |_| | (_) | | | \__ \                                                                                   
 |___/\___/|_|\__,_|\__|_|\___/|_| |_|___/                                                                                   
                                                                                                                             
+*           ____             _                                                                                              
+  __ _     |  _ \ __ _ _   _| |                                                                                             
+ / _` |    | |_) / _` | | | | |                                                                                             
+| (_| |_   |  __/ (_| | |_| | |                                                                                             
+ \__,_(_)  |_|   \__,_|\__,_|_|                                                                                             
                                                                                                                             
+                                                                                                                            
+data have ;                                                                                                                 
+  length house $4. items $50 ;                                                                                              
+  input ;                                                                                                                   
+  house = scan (_infile_, 1) ;                                                                                              
+  items = substr (_infile_, 5) ;                                                                                            
+  cards ;                                                                                                                   
+001 Chair                                                                                                                   
+002 Chair- Window/Glass-                                                                                                    
+003 Door- Sofa-                                                                                                             
+004 Chair- Window/Glass Frame-                                                                                              
+005 1. Window/Glass Frame                                                                                                   
+006 Chair- Door- Window-                                                                                                    
+007 Chair- Sofa - Door- Table-                                                                                              
+008 4. Table                                                                                                                
+009 Couch (2)                                                                                                               
+010 Window- Table- Chair- Sofa- Door- Couch                                                                                 
+011 2. Door / Chair                                                                                                         
+run ;                                                                                                                       
+                                                                                                                            
+data keywords ;                                                                                                             
+  input keyword $ ;                                                                                                         
+  cards ;                                                                                                                   
+chair                                                                                                                       
+window                                                                                                                      
+table                                                                                                                       
+door                                                                                                                        
+sofa                                                                                                                        
+couch                                                                                                                       
+run ;                                                                                                                       
+                                                                                                                            
+proc sql noprint ;                                                                                                          
+  select upper (keyword) into :kw separated by " " from keywords ;                                                          
+quit ;                                                                                                                      
+                                                                                                                            
+data want (keep = house items &kw) ;                                                                                        
+  set have ;                                                                                                                
+  array kw &kw ;                                                                                                            
+  do over kw ;                                                                                                              
+    kw = ^^ findw (upcase (items), strip (vname (kw))) ;                                                                    
+  end ;                                                                                                                     
+run ;                                                                                                                       
+run;quit;                                                                                                                   
+                                                                                                                            
+*_                                                                                                                          
+| |__      _ __ ___   ___                                                                                                   
+| '_ \    | '_ ` _ \ / _ \                                                                                                  
+| |_) |   | | | | | |  __/                                                                                                  
+|_.__(_)  |_| |_| |_|\___|                                                                                                  
+                                                                                                                            
+;                                                                                                                           
 %symdel keys / nowarn;                                                                                                      
 * The SAS compiler is very fast at this;                                                                                    
 data havNrm ( where=(                                                                                                       
@@ -164,6 +226,7 @@ proc print data=want(drop=name);
   format _character_ $chr2ZroOne. itmSav $44. house $4.;                                                                    
 run;quit;                                                                                                                   
                                                                                                                             
+                                                                                                            
                                                                                                                             
                                                                                                                             
                                                                                                                             
